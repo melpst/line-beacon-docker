@@ -16,7 +16,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - esdata:/usr/share/elasticsearch/data
+      - ./esdata:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
     networks: 
@@ -41,17 +41,17 @@ services:
     image: node:10.16-alpine
     user: node
     working_dir: /home/node/node-mongo
+    networks:
+      - esnet
     environment:
+      - NODE_ENV=production
       - MONGODB_URL=${MONGODB_URL}
+      - ELASTIC_URL=http://elastic:9200
     volumes:
       - ../node-mongo:/home/node/node-mongo
     ports:
       - 3000:3000
     command: "npm run serve"
-
-volumes:
-  esdata:
-    driver: local
 
 networks:
   esnet:
