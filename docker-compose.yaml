@@ -26,10 +26,6 @@ services:
     container_name: kibana
     restart: always
     image: docker.elastic.co/kibana/kibana:7.3.1
-    environment:
-      ELASTICSEARCH_URL: http://elastic:9200
-      ELASTICSEARCH_USERNAME: username
-      ELASTICSEARCH_PASSWORD: password
     networks:
       - esnet
     volumes:
@@ -38,6 +34,20 @@ services:
       - 5601:5601
     depends_on: 
       - elastic
+
+  node:
+    container_name: node-mongo
+    restart: always
+    image: node:10.16-alpine
+    user: node
+    working_dir: /home/node/node-mongo
+    environment:
+      - MONGODB_URL=${MONGODB_URL}
+    volumes:
+      - ../node-mongo:/home/node/node-mongo
+    ports:
+      - 3000:3000
+    command: "npm run serve"
 
 volumes:
   esdata:
