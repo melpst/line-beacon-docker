@@ -66,6 +66,7 @@ services:
       - ./nginx-conf:/etc/nginx/conf.d
       - ./certbot-etc:/etc/letsencrypt
       - ./certbot-var:/var/lib/letsencrypt
+      - dhparam:/etc/ssl/certs
     depends_on:
       - node
     networks:
@@ -80,14 +81,20 @@ services:
       - app-dir:/var/www/html
     depends_on:
       - webserver
-    command: certonly --webroot --webroot-path=/var/www/html --email jitlada.supreeyaporn@global.ntt --agree-tos --no-eff-email --staging -d localhost
+    command: certonly --webroot --webroot-path=/var/www/html --email jitlada.supreeyaporn@global.ntt --agree-tos --no-eff-email --staging -d linebeacon.southcentralus.cloudapp.azure.com
 
 volumes:
   app-dir:
     driver: local
     driver_opts:
       type: none
-      device: //d/work/node-mongo
+      device: /home/LineBeaconAdmin/node-mongo
+      o: bind
+  dhparam:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/LineBeaconAdmin/line-beacon-docker/dhparam/
       o: bind
 
 networks:
