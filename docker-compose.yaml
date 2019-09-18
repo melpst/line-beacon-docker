@@ -36,23 +36,62 @@ services:
       - elastic
 
   node:
-    container_name: node-mongo
+    container_name: node
     restart: always
     image: node:10.16-alpine
     user: node
     working_dir: /home/node/node-mongo
     networks:
       - esnet
+      - appnet
     environment:
       - NODE_ENV=production
       - MONGODB_URL=${MONGODB_URL}
       - ELASTIC_URL=http://elastic:9200
     volumes:
-      - ../node-mongo:/home/node/node-mongo
+      - app-dir:/home/node/node-mongo
     ports:
       - 3000:3000
     command: "npm run serve"
 
+  webserver:
+    image: nginx:mainline-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - app-dir:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - ./certbot-etc:/etc/letsencrypt
+      - ./certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - node
+    networks:
+      - appnet
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot-etc:/etc/letsencrypt
+      - ./certbot-var:/var/lib/letsencrypt
+      - app-dir:/var/www/html
+    depends_on:
+      - webserver
+    command: certonly --webroot --webroot-path=/var/www/html --email jitlada.supreeyaporn@global.ntt --agree-tos --no-eff-email --staging -d localhost
+
+volumes:
+  app-dir:
+    driver: local
+    driver_opts:
+      type: none
+      device: //d/work/node-mongo
+      o: bind
+
 networks:
+  appnet:
+    driver: bridge
   esnet:
 
